@@ -1,16 +1,20 @@
 from distutils.core import setup
 
+
+def _my_func(dist, attr, value):
+    print("*****", dist, attr, value)
+    dist.metadata.version = f"1.2.3+{value}"
+
+
 setup(
     name='packageversiontest',
     long_description=open('README.md').read(),
-    setup_requires=['setuptools-git-versioning'],
-    version_config={
-        "template": "{tag}",
-        "dev_template": "{tag}.dev{ccount}+git.{sha}",
-        "dirty_template": "{tag}.dev{ccount}+git.{sha}.dirty",
-        "starting_version": "0.0.0",
-        "version_callback": None,
-        "version_file": None,
-        "count_commits_from_version_file": False
+    long_description_content_type="text/markdown",
+    entry_points={
+        "distutils.setup_keywords": [
+            "foo = setup:_my_func",
+        ],
     },
+    foo="Banana",
 )
+print("***** Finished!")
