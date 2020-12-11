@@ -24,10 +24,7 @@ class Git(object):
             return int(self._exec("rev-list", "--count", "HEAD").decode('utf8').strip())
 
 
-def _get_version_from_scm(dist, attr, value):
-    if not value:
-        return
-
+def _get_version_from_scm():
     git = Git()
     tag = git.latest_tag()
     if tag:
@@ -50,17 +47,12 @@ def _get_version_from_scm(dist, attr, value):
         # feature branch; all commits have the same package version
         version += f"+{branch_name}"
 
-    dist.metadata.version = version
+    return version
 
 
 setup(
     name='packageversiontest',
+    version=_get_version_from_scm(),
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
-    entry_points={
-        "distutils.setup_keywords": [
-            "version_from_scm = setup:_get_version_from_scm",
-        ],
-    },
-    version_from_scm=True,
 )
