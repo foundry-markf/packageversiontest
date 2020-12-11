@@ -19,7 +19,7 @@ class Git(object):
 
     def commit_count_since(self, ref):
         if ref:
-            return int(self._exec("rev-list", "--count", "HEAD", f"^{{{ref}}}").decode('utf8').strip())
+            return int(self._exec("rev-list", "--count", "HEAD", f"^{ref}").decode('utf8').strip())
         else:
             return int(self._exec("rev-list", "--count", "HEAD").decode('utf8').strip())
 
@@ -29,23 +29,21 @@ def _get_version_from_scm():
     tag = git.latest_tag()
     if tag:
         version = tag
+        commit_count = git.commit_count_since(tag)
     else:
         # no tags exist on the repo, so it's never been released
         version = "0.0.0"
+        commit_count = git.commit_count_since(None)
 
-    branch_name = git.branch_name()
-    if branch_name == "master" or branch_name.startswith("v"):
-        # master or maintenance branch
-        if tag:
-            commit_count = git.commit_count_since(tag)
-        else:
-            commit_count = git.commit_count_since(None)
-        if commit_count > 0:
-            # progress has been made since the last release
+    if commit_count > 0:
+        # progress has been made since the last release
+        branch_name = git.branch_name()
+        if branch_name == "master" or branch_name.startswith("v"):
+            # master or maintenance branch
             version += f".dev{commit_count}"
-    else:
-        # feature branch; all commits have the same package version
-        version += f"+{branch_name}"
+        else:
+            # feature branch; all commits have the same package version
+            version += f"+{branch_name}"
 
     return version
 
