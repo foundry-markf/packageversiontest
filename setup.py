@@ -53,4 +53,5 @@ setup(
     version=_get_version_from_scm(),
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
+    py_modules=['packageversiontest'],
 )
