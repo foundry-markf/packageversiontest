@@ -1,8 +1,17 @@
 from distutils.core import setup
+import os
 import subprocess
 
 
+class NotAGitRepo(Exception):
+    pass
+
+
 class Git(object):
+    def __init__(self):
+        if not os.path.isdir(".git"):
+            raise NotAGitRepo()
+
     def _exec(self, *args):
         cmds = ["git"] + list(args)
         output = subprocess.check_output(cmds)
@@ -25,27 +34,35 @@ class Git(object):
 
 
 def _get_version_from_scm():
-    git = Git()
-    tag = git.latest_tag()
-    if tag:
-        version = tag
-        commit_count = git.commit_count_since(tag)
-    else:
-        # no tags exist on the repo, so it's never been released
-        version = "0.0.0"
-        commit_count = git.commit_count_since(None)
-
-    if commit_count > 0:
-        # progress has been made since the last release
-        branch_name = git.branch_name()
-        if branch_name == "master" or branch_name.startswith("v"):
-            # master or maintenance branch
-            version += f".dev{commit_count}"
+    try:
+        git = Git()
+        tag = git.latest_tag()
+        if tag:
+            version = tag
+            commit_count = git.commit_count_since(tag)
         else:
-            # feature branch; all commits have the same package version
-            version += f"+{branch_name}"
+            # no tags exist on the repo, so it's never been released
+            version = "0.0.0"
+            commit_count = git.commit_count_since(None)
 
-    return version
+        if commit_count > 0:
+            # progress has been made since the last release
+            branch_name = git.branch_name()
+            if branch_name == "master" or branch_name.startswith("v"):
+                # master or maintenance branch
+                version += f".dev{commit_count}"
+            else:
+                # feature branch; all commits have the same package version
+                version += f"+{branch_name}"
+
+        with open("version.py", "wt") as f:
+            f.write(f"__version__='{version}'")
+        return version
+    except NotAGitRepo:
+        version = {}
+        with open("version.py") as f:
+            exec(f.read(), version)
+        return version["__version__"]
 
 
 setup(

@@ -1,2 +1,2 @@
-import pkg_resources
-print(pkg_resources.get_distribution("packageversiontest").version)
+import version
+print(f"Version: {version.__version__}")
