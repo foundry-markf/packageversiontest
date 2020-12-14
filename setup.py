@@ -50,7 +50,9 @@ def _get_version_from_scm():
             branch_name = git.branch_name()
             if branch_name == "master" or branch_name.startswith("v"):
                 # master or maintenance branch
-                version += f".dev{commit_count}"
+                if tag:
+                    # commit counts are added once tags exist
+                    version += f".dev{commit_count}"
             else:
                 # feature branch; all commits have the same package version
                 version += f"+{branch_name}"
